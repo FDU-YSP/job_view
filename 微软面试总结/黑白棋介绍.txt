@@ -1,0 +1,416 @@
+黑白棋，又叫翻转棋（Reversi）、奥赛罗棋（Othello）、苹果棋或反棋（Anti reversi）。黑白棋在西方和日本很流行。
+游戏通过相互翻转对方的棋子，最后以棋盘上谁的棋子多来判断胜负。它的游戏规则简单，因此上手很容易，但是它的变化又非常复杂。
+有一种说法是：只需要几分钟学会它，却需要一生的时间去精通它。
+
+棋钟：正式的比赛中可以使用棋钟对选手的时间进行限制。非正式的对局中一般不使用棋钟。
+游戏规则
+黑白棋的棋盘是一个有8*8方格的棋盘。下棋时将棋下在空格中间，而不是像围棋一样下在交叉点上。开始时在棋盘正中有两白两黑四个棋子交叉放置，黑棋总是先下子[1]  。
+下子的方法
+把自己颜色的棋子放在棋盘的空格上，而当自己放下的棋子在横、竖、斜八个方向内有一个自己的棋子，则被夹在中间的全部翻转会成为自己的棋子。并且，只有在可以翻转棋子的地方才可以下子。
+棋规
+1．棋局开始时黑棋位于e4和d5，白棋位于d4和e5，如图1-3所示。
+2．黑方先行，双方交替下棋。
+3．一步合法的棋步包括：在一个空格新落下一个棋子，并且翻转对手一个或多个棋子。
+4．新落下的棋子与棋盘上已有的同色棋子间，对方被夹住的所有棋子都要翻转过来。可以是横着夹，竖着夹，或是斜着夹。夹住的位置上必须全部是对手的棋子，不能有空格。
+5．一步棋可以在数个方向上翻棋，任何被夹住的棋子都必须被翻转过来，棋手无权选择不去翻某个棋子。
+6．除非至少翻转了对手的一个棋子，否则就不能落子。如果一方没有合法棋步，也就是说不管他下到哪里，都不能至少翻转对手的一个棋子，那他这一轮只能弃权，而由他的对手继续落子直到他有合法棋步可下。
+7．如果一方至少有一步合法棋步可下，他就必须落子，不得弃权。
+8．棋局持续下去，直到棋盘填满或者双方都无合法棋步可下。
+
+规则
+如果玩家在棋盘上没有地方可以下子，则该玩家对手可以连下。双方都没有棋子可以下时棋局结束，以棋子数目来计算胜负，棋子多的一方获胜。
+在棋盘还没有下满时，如果一方的棋子已经被对方吃光，则棋局也结束。将对手棋子吃光的一方获胜。
+翻转棋类似于棋盘游戏“奥赛罗 (Othello)”，是一种得分会戏剧性变化并且需要长时间思考的策略性游戏。
+翻转棋的棋盘上有 64 个可以放置黑白棋子的方格（类似于国际象棋和跳棋）。游戏的目标是使棋盘上自己颜色的棋子数超过对手的棋子数。
+该游戏非常复杂，其名称就暗示着结果的好坏可能会迅速变化。
+当游戏双方都不能再按规则落子时，游戏就结束了。通常，游戏结束时棋盘上会摆满了棋子。结束时谁的棋子最多谁就是赢家。
+
+
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#define MAXSIZE 8//  设置棋盘最大尺寸
+//函数声明
+int Exa(char board[][MAXSIZE], int arrput[][MAXSIZE], char );//计算步数
+void Print(char board[][MAXSIZE], int , int , char );//
+int CalSore(char board[][MAXSIZE], char );
+int Hint(char board[][MAXSIZE], int arrput[][MAXSIZE], char );//最佳算法
+void Foeplay(char board[][MAXSIZE], int arrput[][MAXSIZE], char );
+void Show(char board[][MAXSIZE]);//显示棋盘
+int main()
+{
+	char board[MAXSIZE][MAXSIZE];
+	int arrput[MAXSIZE][MAXSIZE] = { 0 };
+	int row, col, x, y;
+	int count = 0;
+	int level = 0;
+	int cross = 0;
+	int score[2];
+	char ok;
+	char input[100];
+	int order = 0;
+	printf("=============================翻转棋=============================\n");
+	printf("REVERSI\n");
+	printf("You will be white - (O)\nI will be black - (X).\nok a square for your move by typing a digit for the row\nand a letter for the column with no spaces between.\nGood luck! Press Enter to start.\n");
+	scanf("%c", &ok);
+	printf("Go First? Press 1 to go first,and 0 to go second.");
+	scanf("%d", &order);
+	if (order == 0)
+		level = 1;
+
+	if (level == 0)
+	{
+		level = 1;
+	}
+	else
+	{
+		level = 0;
+	}
+	count = 4;
+	for (row = 0; row < MAXSIZE; row++)//设置棋盘的初始值
+	{
+		for (col = 0; col < MAXSIZE; col++)
+		{
+			board[row][col] = 0;
+		}
+	}
+	board[MAXSIZE / 2 - 1][MAXSIZE / 2 - 1] = board[MAXSIZE / 2][MAXSIZE / 2] = -1;	//初始化参数
+	board[MAXSIZE / 2 - 1][MAXSIZE / 2] = board[MAXSIZE / 2][MAXSIZE / 2 - 1] = 1;
+	printf("\nInitial:\n");
+	Show(board);//显示棋盘
+	int i = 0;
+	for (i = count; count < (MAXSIZE*MAXSIZE) && cross < 2;)
+	{
+		if (level == 1)
+		{
+			level = 0;
+			if (Exa(board, arrput, 2))
+			{
+				while (1)
+				{
+					printf("Please enter your move (row column- no space):");
+					scanf("%s", input);
+					x = input[0] - '0';//根据用户输入的位置将其转化成二维数组的下标
+					y = input[1];
+					x--;
+					if (y >= 'a')
+					{
+						y = y - 'a' + 1;
+					}
+					else
+					{
+						y = y - 'A' + 1;
+					}
+					y--;//将用户输入的列标转换成二维数组的列下标
+					if (x >= 0 && y >= 0 && x < MAXSIZE && y < MAXSIZE && arrput[x][y])//判断输入是否正确
+					{
+						Print(board, x, y, 2);
+						count++;
+						break;
+					}
+					else
+					{
+						printf("Not a valid move, try again.\n");
+					}
+				}
+				Show(board);//根据用户输入的位置进行更新棋盘并显示
+			}
+			else if (++cross < 2)
+			{
+				printf("NO MOVE,AI GO.\n");
+			}
+			else
+			{
+				printf("BOTH NO MOVE, GAME OVER.\n");
+			}
+		}
+		else
+		{
+			level = 1;
+			if (Exa(board, arrput, 1))
+			{
+				cross = 0;
+				Foeplay(board, arrput, 1);
+				count++;
+				Show(board);
+			}
+			else
+			{
+				if (++cross < 2)
+				{
+					printf("NO MOVE, nowplay GO.\n");
+				}
+				else
+				{
+					printf("BOTH NO MOVE, GAME OVER.");
+				}
+			}
+		}
+	}
+	Show(board);
+	score[0] = score[1] = 0;
+	for (row = 0; row < MAXSIZE; row++)//开始计算分数
+	{
+		for (col = 0; col < MAXSIZE; col++)
+		{
+			score[0] = score[0] + (board[row][col] == -1);
+			score[1] = score[1] + (board[row][col] == 1);
+		}
+	}
+	printf("Final score:\n");
+	printf("AI:%d\nnowplay:%d\n", score[1], score[0]);
+	scanf("%c", &ok);
+	return 0;
+}
+void Show(char board[][MAXSIZE])
+{
+	int row, col;
+	printf("\n   ");
+	for (col = 0; col < MAXSIZE; col++)//显示 棋盘横向标识
+	{
+		printf("%c  ", col + 'a');
+	}
+	for (row = 0; row < MAXSIZE; row++)
+	{
+		printf("\n ");
+		for (col = 0; col < MAXSIZE; col++)
+		{
+			printf("+--");
+			if (col == (MAXSIZE - 1))
+				printf("+\n");
+		}
+		printf("%c", row + '1');
+		for (col = 0; col < MAXSIZE; col++)
+		{
+			if (board[row][col] == 1)//根据数组中的值显示相应的标记
+				printf("|╳");
+			else if (board[row][col] == -1)
+				printf("|○");
+			else
+			{
+				printf("|  ");
+			}
+			if (col == (MAXSIZE - 1))
+				printf("|");
+		}
+		if (row == (MAXSIZE - 1))
+		{
+			printf("\n ");
+			for (col = 0; col < MAXSIZE; col++)//显示分隔符
+			{
+				printf("+--");
+				if (col == (MAXSIZE - 1))
+					printf("+\n");
+			}
+		}
+	}
+}
+int Exa(char board[][MAXSIZE], int arrput[][MAXSIZE], char level)
+{
+	int rowd, cold, row, col, x, y = 0;
+	int step = 0;
+	char foe;
+	if (level == 1)
+		foe = -1;
+	else
+		foe = 1;
+	char player = -1 * foe;
+	for (row = 0; row < MAXSIZE; row++)
+	{
+		for (col = 0; col < MAXSIZE; col++)
+		{
+			arrput[row][col] = 0;
+		}
+	}
+	for (row = 0; row < MAXSIZE; row++)
+	{
+		for (col = 0; col < MAXSIZE; col++)
+		{
+			if (board[row][col] != 0)//找到二维数组中值位1的元素
+				continue;
+			for (rowd = -1; rowd <= 1; rowd++)
+				for (cold = -1; cold <= 1; cold++)
+				{
+					//判断是否越界
+					if (row + rowd < 0 || row + rowd >= MAXSIZE
+						|| col + cold < 0 || col + cold >= MAXSIZE
+						|| (rowd == 0 && cold == 0))
+					{
+						continue;
+					}
+					if (board[row + rowd][col + cold] == foe)
+					{
+						x = row + rowd;
+						y = col + cold;
+						while (1)
+						{
+							x += rowd;
+							y += cold;
+							if (x < 0 || x >= MAXSIZE || y < 0 || y >= MAXSIZE)
+							{
+								break;
+							}
+							if (board[x][y] == 0)
+							{
+								break;
+							}
+							if (board[x][y] == player)
+							{
+								arrput[row][col] = 1;
+								step++;
+								break;
+							}
+						}
+					}
+				}
+			}
+	}
+	return step;
+}
+void Print(char board[][MAXSIZE], int row, int col, char level)
+{
+	int rowd = 0, cold = 0, x = 0, y = 0;
+	char foe;
+	if (level == 1)
+		foe = -1;
+	else
+		foe = 1;
+	char player = -1 * foe;
+	board[row][col] = player;
+	for (rowd = -1; rowd <= 1; rowd++)
+	{
+		for (cold = -1; cold <= 1; cold++)
+		{
+			if (row + rowd < 0 || row + rowd >= MAXSIZE || col + cold < 0
+				|| col + cold >= MAXSIZE || (rowd == 0 && cold == 0))//判断是否越界
+			{
+				continue;
+			}
+			if (board[row + rowd][col + cold] == foe)
+			{
+				x = row + rowd;
+				y = col + cold;
+				while (1)
+				{
+					x += rowd;
+					y += cold;
+					if (x < 0 || x >= MAXSIZE || y < 0 || y >= MAXSIZE)//判断越界
+					{
+						break;
+					}
+					if (board[x][y] == 0)
+					{
+						break;
+					}
+					if (board[x][y] == player)
+					{
+						while (board[x -= rowd][y -= cold] == foe)//找到当前的位置
+						{
+							board[x][y] = player;
+						}
+						break;
+					}
+				}
+			}
+		}
+	}
+}
+int CalSore(char board[][MAXSIZE], char level)//计算成绩
+{
+	int score = 0;
+	int row, col;
+	char foe ;
+	if (level == 1)
+		foe = -1;
+	else
+		foe = 1;
+	char player = -1 * foe;
+	for (row = 0; row < MAXSIZE; row++)
+		for (col = 0; col < MAXSIZE; col++)
+		{
+			score = score - (board[row][col] == foe);
+			score = score + (board[row][col] == player);
+		}
+	return score;
+}
+int Hint(char board[][MAXSIZE], int arrput[][MAXSIZE], char level)//提示最佳走法
+{
+	int row, col, i, j;
+	char board1[MAXSIZE][MAXSIZE] = { 0 };
+	int maxscore = 0;
+	int score = 0;
+	char foe;
+	if (level == 1)
+		foe = -1;
+	else
+		foe = 1;
+	for (row = 0; row < MAXSIZE; row++)
+		for (col = 0; col < MAXSIZE; col++)
+		{
+			if (!arrput[row][col])
+				continue;
+			for (i = 0; i < MAXSIZE; i++)
+				for (j = 0; j < MAXSIZE; j++)
+				{
+					board1[i][j] = board[i][j];
+				}
+			Print(board1, row, col, level);
+			score = CalSore(board1, level);
+			if (maxscore < score)
+				maxscore = score;
+		}
+	return maxscore;
+}
+void Foeplay(char board[][MAXSIZE], int arrput[][MAXSIZE], char level)
+{
+	int row, col, row1, col1, i, j;
+	int score = 0, minscore = 100;
+	char board1[MAXSIZE][MAXSIZE];
+	int arrput1[MAXSIZE][MAXSIZE];
+	char foe;
+	if (level == 1)
+		foe = -1;
+	else
+		foe = 1;
+	for (row = 0; row < MAXSIZE; row++)
+	{
+		for (col = 0; col < MAXSIZE; col++)
+		{
+			if (arrput[row][col] == 0)
+			{
+				continue;
+			}
+			for (i = 0; i < MAXSIZE; i++)
+			{
+				for (j = 0; j < MAXSIZE; j++)
+				{
+					board1[i][j] = board[i][j];
+				}
+			}
+			Print(board1, row, col, level);
+			Exa(board1, arrput1, foe);
+			score = Hint(board1, arrput1, foe);
+			if ((row == 0 && col == 0) || (row == 0 && col == MAXSIZE - 1 || row == MAXSIZE - 1 && col == 0 || row == MAXSIZE - 1 && col == MAXSIZE - 1))
+			{
+				minscore = score;
+				row1 = row;
+				col1 = col;
+			}
+			else if (row == 0 || row == MAXSIZE - 1 || col == 0 || col == MAXSIZE - 1)
+			{
+				minscore = score;
+				row1 = row;
+				col1 = col;
+			}
+			else if (score < minscore)
+			{
+				minscore = score;
+				row1 = row;
+				col1 = col;
+			}
+		}
+	}
+	Print(board, row1, col1, level);
+}
+
+
